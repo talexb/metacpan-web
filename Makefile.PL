@@ -73,6 +73,7 @@ my %WriteMakefileArgs = (
     "Moose" => 0,
     "Moose::Role" => 0,
     "MooseX::ClassAttribute" => 0,
+    "MooseX::StrictConstructor" => 0,
     "Perl::PrereqScanner" => "1.014",
     "Plack::Middleware::Assets" => 0,
     "Plack::Middleware::ReverseProxy" => 0,

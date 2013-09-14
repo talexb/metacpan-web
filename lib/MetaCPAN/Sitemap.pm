@@ -6,15 +6,17 @@ package MetaCPAN::Sitemap;
 use strict;
 use warnings;
 use autodie;
-use Carp;
 
+use Moose;
+use MooseX::StrictConstructor;
+
+use Carp;
 use File::Spec;
 use ElasticSearch;
-use Moose;
 use PerlIO::gzip;
 use XML::Simple qw(:strict);
 
-has [ 'cpan_directory', 'object_type', 'field_name', 'xml_file', ] => (
+has [ 'cpan_directory', 'field_name', 'object_type', 'xml_file' ] => (
     is       => 'ro',
     isa      => 'Str',
     required => 1,
@@ -26,13 +28,11 @@ has 'filter' => (
 );
 
 #  Mandatory arguments to this function are
-#  [] search object_type (author, distribution, and release)
+#  [] output cpan_directory (author, module, release)
 #  [] result field_name (pauseid, name, and download_url)
+#  [] search object_type (author, distribution, and release)
 #  [] name of output xml_file (path to the output XML file)
 #  Optional arguments to this function are
-#  [] output cpan_directory (author, module, and doesn't exist)
-#  [] test_search (search count - if non-zero, limits search to that number of
-#  items for testing)
 #  [] filter - contains filter for a field that also needs to be included in
 #  the list of form fields.
 
@@ -82,10 +82,7 @@ sub process {
     open( my $fh, '>:gzip', $self->xml_file );
 
     my @urls;
-    my $metacpan_url = '';
-    if ( $self->cpan_directory ) {
-        $metacpan_url = 'https://metacpan.org/' . $self->cpan_directory . '/';
-    }
+    my $metacpan_url = 'https://metacpan.org/' . $self->cpan_directory . '/';
 
     do {
         my @hits = $scrolled_search->drain_buffer;
