@@ -27,6 +27,10 @@ has 'filter' => (
     isa => 'HashRef',
 );
 
+has 'translateDashToColons' => (
+    is  => 'ro',
+);
+
 #  Mandatory arguments to this function are
 #  [] output cpan_directory (author, module, release)
 #  [] result field_name (pauseid, name, and download_url)
@@ -86,9 +90,14 @@ sub process {
 
     do {
         my @hits = $scrolled_search->drain_buffer;
-        push( @urls,
-            map { $metacpan_url . $_->{'fields'}->{ $self->field_name } }
-                @hits );
+        push(
+            @urls,
+            map {
+                my $field = $_->{'fields'}->{ $self->field_name };
+                if ( $self->translateDashToColons ) { $field =~ s/-/::/g; }
+                $metacpan_url . $field
+            } @hits
+        );
     } while ( $scrolled_search->next() );
 
     my $xml = XMLout(

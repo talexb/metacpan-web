@@ -5,7 +5,7 @@ use autodie;
 use Test::More;
 
 use File::Temp qw/ tempdir /;
-use MetaCPAN::SiteMap;
+use MetaCPAN::Sitemap;
 use Try::Tiny;
 use XML::Simple;
 
@@ -27,10 +27,11 @@ my @tests = (
     },
 
     {   inputs => {
-            object_type    => 'distribution',
-            field_name     => 'name',
-            xml_file       => '',
-            cpan_directory => 'module',
+            object_type           => 'distribution',
+            field_name            => 'name',
+            xml_file              => '',
+            cpan_directory        => 'module',
+            translateDashToColons => '1',
         },
         pattern => qr{https:.+/module/\w+},
     },
@@ -46,7 +47,8 @@ my @tests = (
     }
 );
 
-my $tempDir = tempdir( CLEANUP => 1 );
+my $tempDir = tempdir( CLEANUP => 0 );
+diag "Temp dir is $tempDir";
 
 foreach my $test (@tests) {
 
