@@ -76,7 +76,7 @@ sub process {
         #  the filter fields to the field list.
 
         $search_parameters{'queryb'} = $self->filter;
-        push( @{ $search_parameters{'fields'} }, keys %{ $self->filter } );
+        push( @{ $search_parameters{'fields'} }, grep {!/and/ } keys %{ $self->filter } );
     }
 
     my $scrolled_search = $es->scrolled_search(%search_parameters);

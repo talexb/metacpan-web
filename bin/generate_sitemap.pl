@@ -10,6 +10,9 @@ use lib "$Bin/../lib";
 
 use MetaCPAN::Sitemap;
 
+my @ROGUE_DISTRIBUTIONS
+    = qw(kurila perl_debug perl-5.005_02+apache1.3.3+modperl pod2texi perlbench spodcxx);
+
 my @parts = (
 
     #  For authors, we're looking for the pauseid, and want to build a URL
@@ -21,13 +24,49 @@ my @parts = (
         cpan_directory => 'author',
     },
 
-    #  For distributions, we're looking for the distribution name, and we
-    #  want to build a URL with 'module' in the path.
+    #  For distributions, we're looking for the module name, and we
+    #  want to build a URL with 'module' in the path. Filter definition lifted
+    #  from iCPAN.pm.
 
-    {   object_type    => 'distribution',
+    {   object_type    => 'file',
         field_name     => 'name',
         xml_file       => '/tmp/modules.xml.gz',
         cpan_directory => 'module',
+        filter         => {
+            and => [
+                {   -not_filter => {
+                            or => [
+                                map {
+                                    { term => { 'file.distribution' => $_ } }
+                                } @ROGUE_DISTRIBUTIONS
+                            ]
+                        }
+                },
+                { term => { status => 'latest' } },
+                {   or => [
+
+                        # we are looking for files that have no authorized
+                        # property (e.g. .pod files) and files that are
+                        # authorized
+                        { missing => { field => 'file.authorized' } },
+                        { term => { 'file.authorized' => \1 } },
+                    ]
+                },
+                {   or => [
+                        {   and => [
+                                { exists => { field => 'file.module.name' } },
+                                { term => { 'file.module.indexed' => \1 } }
+                            ]
+                        },
+                        {   and => [
+                                { exists => { field => 'documentation' } },
+                                { term => { 'file.indexed' => \1 } }
+                            ]
+                        }
+                    ]
+                },
+            ]
+        }
     },
 
     #  For releases, we're looking for a download URL; since we're not
